@@ -150,7 +150,7 @@ void *pad_mgr_task()
     int listenfd = 0, connfd = 0;
     int recv_len, send_len;
     struct sockaddr_in serv_addr;
-
+	int ret = 0;
     char sendBuff[EGGM_PAD_MSG_SIZE];
     char recvBuff[EGGM_PAD_MSG_SIZE];
     struct eggm_pad_msg_t send_pad_msg;
@@ -160,16 +160,31 @@ void *pad_mgr_task()
 
     memset(&send_pad_msg, 0, sizeof(struct eggm_pad_msg_t));
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(listenfd < 0)
+	{
+		eggm_log(" eggm_pad socket open error!! (port:11001), please restart eggm");
+		return;
+	}
     memset(&serv_addr, '0', sizeof(serv_addr));
     memset(sendBuff, '0', sizeof(sendBuff));
 
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    serv_addr.sin_port = htons(11001);
-    bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr.sin_port = htons(11001);
+	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	if( ret < 0 )
+	{
+		eggm_log("eggm_pad: bind err=%d\n",ret);
+		return;
+	}
+	ret = listen(listenfd, 10);
+	if( ret < 0 )
+	{
+		eggm_log("eggm_pad: listen err = %d\n",ret);
+		return;
+	}
 
-    listen(listenfd, 10);
-    while(1)
+	while(1)
     {
         int n = 0;
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
