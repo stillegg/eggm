@@ -41,7 +41,7 @@
 #define DEBUG_PAD
 #define DEBUG_REMODE
 
-#define MUSIC_DIR "/home/pi/eggm/music"
+#define MUSIC_DIR "/home/pi/music"
 
 //special, remote has many id
 //example)   0x51 => machine: remote,  id 1 
