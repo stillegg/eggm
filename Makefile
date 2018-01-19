@@ -2,7 +2,7 @@ CC = gcc
 #CFLAGS = -W
 CFLAGS = -g -W -Wall -lrt -pthread 
 TARGET = eggm
-OBJECTS =  eggm_io.o eggm_time.o eggm_common.o eggm_pw.o eggm_music.o eggm_pad.o eggm_schedule.o  eggm.o
+OBJECTS =  eggm_io.o eggm_time.o eggm_common.o eggm_pw.o eggm_ac.o eggm_music.o eggm_pad.o eggm_schedule.o  eggm.o
 #OBJECTS = eggm_common.o eggm_time.o eggm_socket.o eggm_client.o eggm_serv.o eggm.o
 
 all : $(TARGET)
