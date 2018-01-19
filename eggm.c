@@ -282,7 +282,11 @@ int main(int argc, char *argv[])
 	pthread_t music_mgr_tid = - 1;
 	pthread_t schedule_mgr_tid = - 1;
 	pthread_t monitoring_tid = - 1;
-	eggm_log("--- run eggm! --");
+	
+	eggm_log("");
+	eggm_log("----------------------");
+	eggm_log("--- run start eggm! --");
+	eggm_log("----------------------");
 
 	
 	
