@@ -21,105 +21,41 @@
 #include "eggm.h"
 #include "eggm_music.h"
 #include "eggm_pw.h"
+#include "eggm_ac.h"
 #include "eggm_pad.h"
 #include "eggm_schedule.h"
 //#include <termio.h>
 
 
 // global data
-int g_ac_machine_state = 0;
+//int g_ac_machine_state = 0;
 
-struct eggm_ac_data_t g_eggm_ac_data;
+//struct eggm_ac_data_t g_eggm_ac_data;
 
 
 //struct eggm_schedule_data_t g_eggm_week_schedule[7]; //0 = sunday, 7 = thursday
 //struct eggm_schedule_data_t g_eggm_cur_schedule;
 
 // lock!!
-pthread_mutex_t ac_mutex = PTHREAD_MUTEX_INITIALIZER;
+//pthread_mutex_t ac_mutex = PTHREAD_MUTEX_INITIALIZER;
 //pthread_mutex_t schedule_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 
-void ac_data_lock() { pthread_mutex_lock(&ac_mutex); }
-void ac_data_unlock() { pthread_mutex_unlock(&ac_mutex); }
+//void ac_data_lock() { pthread_mutex_lock(&ac_mutex); }
+//void ac_data_unlock() { pthread_mutex_unlock(&ac_mutex); }
 //void schedule_data_lock() { pthread_mutex_lock(&schedule_mutex); }
 //void schedule_data_unlock() { pthread_mutex_unlock(&schedule_mutex); }
 
 // int function
 void init_eggm_data()
 {
-    memset(&g_eggm_ac_data,0, sizeof(struct eggm_ac_data_t));
+ //   memset(&g_eggm_ac_data,0, sizeof(struct eggm_ac_data_t));
 }
 
-
-int get_ac_data(struct eggm_ac_data_t *ac_data)
-{
-    int ret = -1;
-    ac_data_lock();
-    if( g_ac_machine_state == 1 )
-    {
-	memcpy(ac_data, &g_eggm_ac_data, sizeof(struct eggm_ac_data_t));
-	ret = 1;
-    }
-    ac_data_unlock();
-    return ret;
-}
-void set_ac_data(struct eggm_ac_data_t *ac_data)
-{
-    ac_data_lock();
-    g_eggm_ac_data.state = ac_data->state ;
-    g_eggm_ac_data.front_temp1 = ac_data->front_temp1 ;
-    g_eggm_ac_data.front_temp2 = ac_data->front_temp2 ;
-    g_eggm_ac_data.room_temp1 = ac_data->room_temp1 ;
-    g_eggm_ac_data.room_temp2 = ac_data->room_temp2 ;
-    ac_data_unlock();
-}
-#if 0
-void get_schedule_data_by_wday(struct eggm_schedule_data_t *s_data, int wday)
-{
-	schedule_data_lock();
-  	s_data->is_enable	=  g_eggm_week_schedule[wday].is_enable;
-  	s_data->start_hour 	=  g_eggm_week_schedule[wday].start_hour;
-  	s_data->start_min	=  g_eggm_week_schedule[wday].start_min;
-  	s_data->end_hour 	=  g_eggm_week_schedule[wday].end_hour;
-  	s_data->end_min 	=  g_eggm_week_schedule[wday].end_min;
-	schedule_data_unlock();
-}
-
-void get_cur_schedule(struct eggm_schedule_data_t *s_data)
-{
-	schedule_data_lock();
-  	s_data->is_enable	=  g_eggm_cur_schedule.is_enable;
-  	s_data->start_hour 	=  g_eggm_cur_schedule.start_hour;
-  	s_data->start_min	=  g_eggm_cur_schedule.start_min;
-  	s_data->end_hour 	=  g_eggm_cur_schedule.end_hour;
-  	s_data->end_min 	=  g_eggm_cur_schedule.end_min;
-	schedule_data_unlock();
-}
-
-void set_schedule_data_by_wday(struct eggm_schedule_data_t *s_data, int wday)
-{
-	schedule_data_lock();
-	g_eggm_week_schedule[wday].is_enable	= s_data->is_enable;
-  	g_eggm_week_schedule[wday].start_hour 	= s_data->start_hour;
-  	g_eggm_week_schedule[wday].start_min	= s_data->start_min;
-  	g_eggm_week_schedule[wday].end_hour		= s_data->end_hour;
-  	g_eggm_week_schedule[wday].end_min		= s_data->end_min;	
-	schedule_data_unlock();
-}
-#endif
-
-void *ac_mgr_task()
-{
-	while(1)
-	{
-		sleep(1);
-	}
-	return NULL;
-}
 
 void *remote_mgr_task()
 {
+	int ret=0;
 	int listenfd = 0, connfd = 0;
 	struct sockaddr_in serv_addr;
 
@@ -131,15 +67,33 @@ void *remote_mgr_task()
 
 	memset(&eggm_msg, 0, sizeof(struct eggm_msg_t));
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(listenfd < 0)
+	{
+		eggm_log("eggm_remote: socket open error!!, please restart eggm");
+		return;
+	}
+
 	memset(&serv_addr, '0', sizeof(serv_addr));
 	memset(sendBuff, '0', sizeof(sendBuff));
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(11002);
-	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	ret = bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	if( ret < 0 )
+	{	
+		eggm_log("eggm_remote: bind err=%d\n",ret);
+		return;
+	}
 
-	listen(listenfd, 10);
+
+	ret = listen(listenfd, 10);
+	if( ret < 0 )
+	{
+		eggm_log("eggm_remote: listen err = %d\n",ret);
+		return;
+	}
+
 
 	while(1)
 	{
@@ -206,18 +160,34 @@ void *monitoring_task()
 	char send_buff[MON_MSG_MAX_SIZE];
 
 	// init socket
+	int ret = 0;
 	int listenfd = 0, connfd = 0;
 	struct sockaddr_in serv_addr;
 
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(listenfd < 0)
+	{
+		eggm_log("eggm_monitor: socket open error!!, please restart eggm");
+		return;
+	}
 	memset(&serv_addr, '0', sizeof(serv_addr));
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(11003);
 	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	if( ret < 0 )
+	{
+		eggm_log("eggm_monitor: bind err=%d\n",ret);
+		return;
+	}
 
-	listen(listenfd, 10);
+	ret = listen(listenfd, 10);
+	if( ret < 0 )
+	{
+		eggm_log("eggm_monitor: listen err = %d\n",ret);
+		return;
+	}
 
 	while(1)
 	{
@@ -294,10 +264,10 @@ int main(int argc, char *argv[])
 	err = pthread_create(&pw_mgr_tid, NULL, &pw_mgr_task, NULL);
 	err = pthread_create(&ac_mgr_tid, NULL, &ac_mgr_task, NULL);
 	err = pthread_create(&pad_mgr_tid, NULL, &pad_mgr_task, NULL);
-	err = pthread_create(&remote_mgr_tid, NULL, &remote_mgr_task, NULL);
+//	err = pthread_create(&remote_mgr_tid, NULL, &remote_mgr_task, NULL);
 	err = pthread_create(&music_mgr_tid, NULL, &music_mgr_task, NULL);
 	err = pthread_create(&schedule_mgr_tid, NULL, &schedule_mgr_task, NULL);
-	err = pthread_create(&monitoring_tid, NULL, &monitoring_task, NULL);
+//	err = pthread_create(&monitoring_tid, NULL, &monitoring_task, NULL);
 
 	while(run)
 	{
