@@ -174,19 +174,19 @@ void print_music_list()
 {
     int i,j;
     struct eggm_music_list_t tmp_ml;
-        printf("===============================================\n");
-        printf("  music list!\n");
-        printf("===============================================\n");
+        eggm_log("===============================================\n");
+        eggm_log("  music list!\n");
+        eggm_log("===============================================\n");
     for( i=0; i< g_music_list_cnt; i++)
     {
         memset( &tmp_ml, 0, sizeof(struct eggm_music_list_t));
         get_music_list_by_num(i, &tmp_ml);
-        printf("[%d] %s\n",i, tmp_ml.listname);
+        eggm_log("[%d] %s\n",i, tmp_ml.listname);
         for( j=0; j<tmp_ml.filecnt ;j++)
         {
-            printf("    [%d]. %s\n",j, tmp_ml.filename[j]);
+            eggm_log("    [%d]. %s\n",j, tmp_ml.filename[j]);
         }
-        printf("------------------------------------------------\n");
+        eggm_log("------------------------------------------------\n");
     }
 }
 
@@ -259,7 +259,7 @@ void *player_thread(char *filename)
 	//char output_file[] = "/run/user/1000/eggm_music_play";
 	sprintf( cmd, "omxplayer \"%s\" -I -s -o alsa > %s", filename, output_file);
 
-	printf("[CMD] %s", cmd);
+	eggm_log("[CMD] %s", cmd);
 	pp = popen(cmd, "w");
 	outp = fopen(output_file, "r");
 	if (pp != NULL) {
@@ -275,13 +275,11 @@ void *player_thread(char *filename)
 				if( ret == 0)
 				{
 					eggm_log("--> end this music");
-					printf("--> end omxplayer\n");
 					break;
 				}
 			}
 		}
-		eggm_log("--> close music player");
-		printf("--> close pipe\n");
+		eggm_log("--> close music player pipe");
 		pclose(pp);
 		player_tid = 0;
 	}
@@ -365,14 +363,14 @@ void *music_mgr_task()
 	}
 	else
 	{
-	    printf("io read listname = %s\n", 	cur_play_listname );
+	    eggm_log("io read listname = %s\n", 	cur_play_listname );
 		cur_play_list_num = get_play_list_num_by_name( cur_play_listname);
 		if( cur_play_list_num != -1)
 		{
-			printf("find num!!=%d\n", cur_play_list_num);
+			eggm_log("find num!!=%d\n", cur_play_list_num);
 			memset( &play_list, 0, sizeof(struct eggm_music_list_t));
 			get_music_list_by_num( cur_play_list_num, &play_list);
-			printf("find list =%s\n", play_list.listname);
+			eggm_log("find list =%s\n", play_list.listname);
 		}
 		else
 		{
@@ -423,9 +421,9 @@ void *music_mgr_task()
 
 		if( strcmp(play_music.listname, cur_play_listname) !=0)
 		{
-			printf("cur:%s,  now:%s \n",play_music.listname,cur_play_listname);
+			eggm_log("cur:%s,  now:%s \n",play_music.listname,cur_play_listname);
 			cur_play_list_num = get_play_list_num_by_name( play_music.listname );
-			printf("next play list num = %d\n",cur_play_list_num);
+			eggm_log("next play list num = %d\n",cur_play_list_num);
 			if( cur_play_list_num != -1)
 			{
 				memset( &play_list, 0, sizeof(struct eggm_music_list_t));

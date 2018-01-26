@@ -4,6 +4,8 @@
 #include<time.h>
 #include<sys/time.h>
 
+#include <stdarg.h>    // va_list, va_start, va_arg, va_end가 정의된 헤더 파일
+
 
 #if 0
 void printPacket(char *packet)
@@ -116,6 +118,7 @@ void print_eggm_sr_msg(int is_recv, struct eggm_sr_msg_t eggm_msg)
 }
 #define STR_TIME_FORMAT      "%y-%m-%d/%H:%M:%S"
 
+#if 0
 void eggm_log(char *str)
 {
 	struct tm tm_now;
@@ -141,6 +144,45 @@ void eggm_log(char *str)
 	sprintf(cmd, "echo \"[%s] %s\" >> .eggm.log", buff, str);
 	system(cmd);
 }
+#else
+void eggm_log( const char* str, ...)
+{
+	struct tm tm_now;
+	struct timespec tspec;
+	char str_buff[900];
+	char time_buff[32];
+	char cmd[1024];
+	va_list va;
+	int i;
+
+	// get time for clock
+	if ( clock_gettime(CLOCK_REALTIME, & tspec) == -1)
+	{
+		printf("log err\n");
+		return;
+	}
+
+	// timespec to tm
+	localtime_r((time_t*)&tspec.tv_sec, &tm_now);
+
+	if(strftime(time_buff, 32, STR_TIME_FORMAT, &tm_now)==0)
+	{
+		printf("log err\n");
+		return;
+	}
+	
+	va_start(va, str);
+
+	vsnprintf(str_buff, 900,  str, va);
+
+	va_end(va);
+	sprintf(cmd, "echo \"[%s] %s\" >> .eggm.log", time_buff, str_buff);
+	system(cmd);
+	printf("[%s] %s\n",time_buff,str_buff);
+}
+
+
+#endif
 
 #if 0
 void makeEggmMsg(char msg_type, int src_id, int dst_id, int msg_id, char *data, int data_len, struct eggm_msg_t *msg)

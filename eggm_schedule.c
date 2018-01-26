@@ -53,7 +53,7 @@ void set_cur_schedule(struct eggm_schedule_data_t *s_data)
 	g_eggm_cur_schedule.end_min		= s_data->end_min;
 	schedule_data_unlock();
 
-	printf("schedule set star %d/%d end %d/%d\n",
+	eggm_log("schedule set start %d/%d end %d/%d\n",
 		g_eggm_cur_schedule.start_hour,
 		g_eggm_cur_schedule.start_min,
 		g_eggm_cur_schedule.end_hour,
@@ -69,10 +69,9 @@ void set_static_cur_start_schedule(struct eggm_schedule_data_t *s_data)
 	g_is_static_start_sch_run = 1;
 	schedule_data_unlock();
 	
-	char str[200];
-	sprintf(str, "%s/%d  => %d:%d", __func__,__LINE__, 
+	
+	eggm_log("%s/%d  => %d:%d", __func__,__LINE__, 
 		s_data->start_hour, s_data->start_min);
-	eggm_log(str);
 }
 
 void set_static_cur_end_schedule(struct eggm_schedule_data_t *s_data)
@@ -84,10 +83,8 @@ void set_static_cur_end_schedule(struct eggm_schedule_data_t *s_data)
 	g_is_static_end_sch_run = 1;
 	schedule_data_unlock();
 
-	char str[200];
-	sprintf(str, "%s/%d  => %d:%d", __func__,__LINE__, 
+	eggm_log("%s/%d  => %d:%d", __func__,__LINE__, 
 		s_data->end_hour, s_data->end_min);
-	eggm_log(str);
 }
 
 int get_is_static_cur_start_schedule()
@@ -142,10 +139,8 @@ void update_cur_start_sch(int wday)
 	cur_sch.start_min = wsch.start_min;
 	set_cur_schedule( &cur_sch);
 
-	char str[200];
-	sprintf(str, "%s/%d cur_sch_start => %d:%d (%d day)", __func__,__LINE__, 
+	eggm_log( "%s/%d cur_sch_start => %d:%d (%d day)", __func__,__LINE__, 
 		cur_sch.start_hour, cur_sch.start_min, wday);
-	eggm_log(str);
 }
 
 void update_cur_end_sch(int wday)
@@ -157,10 +152,8 @@ void update_cur_end_sch(int wday)
 	cur_sch.end_hour = wsch.end_hour;
 	cur_sch.end_min = wsch.end_min;
 	set_cur_schedule( &cur_sch);
-	char str[200];
-	sprintf(str, "%s/%d cur_sch_end => %d:%d (%d day)", __func__,__LINE__, 
+	eggm_log("%s/%d cur_sch_end => %d:%d (%d day)", __func__,__LINE__, 
 		cur_sch.end_hour, cur_sch.end_min, wday);
-	eggm_log(str);
 }
 
 void *schedule_mgr_task()
@@ -180,23 +173,25 @@ void *schedule_mgr_task()
 	// 01. read config file
 	ret = eggm_io_read_sch_conf(sch); 
 	{
-		printf("read config file ========\n");
+		eggm_log("read config file ========\n");
 		for(i=0;i<7;i++)
 		{
-			printf("[%d]-%03s sch start %d:%d, end %d:%d\n",
+		#if 0
+			eggm_log("[%d]-%03s sch start %d:%d, end %d:%d\n",
 				i, sch[i].is_enable? "EN":"dis",
 				sch[i].start_hour, sch[i].start_min,
 				sch[i].end_hour, sch[i].end_min);
+	   #endif
 			set_schedule_data_by_wday(&sch[i],i);
 		}
 	}
 	// 02. 
-	printf("\nschedule check\n");
+	eggm_log("\nschedule check\n");
 	for(i=0;i<7;i++)
 	{
 		struct eggm_schedule_data_t cur_sch;	
 		get_schedule_data_by_wday( &cur_sch, i);
-		printf("sch [%d:%s] start %d:%d, end %d:%d\n", i, cur_sch.is_enable? "enable":"disable",
+		eggm_log("sch [%d:%s] start %d:%d, end %d:%d\n", i, cur_sch.is_enable? "enable":"disable",
 				cur_sch.start_hour, cur_sch.start_min, cur_sch.end_hour, cur_sch.end_min);
 	}
 
@@ -211,20 +206,17 @@ void *schedule_mgr_task()
 		// get wday data (day change)
 		if( cur_sch_day != tm_now.tm_wday)  
 		{
-			printf("---- day chang!!!\n");
+			eggm_log("---- day chang!!!\n");
 			if( (g_is_static_start_sch_run ==0) && (g_is_static_end_sch_run ==0) )
 			{
-				char str1[200];
-				char str2[200];
-				sprintf( str1, "change sch[1] old ( %02d:%02d ~ %02d:%02d )",
+				eggm_log("change sch[1] old ( %02d:%02d ~ %02d:%02d )",
 					cur_sch.start_hour, cur_sch.start_min, cur_sch.end_hour, cur_sch.end_min);
-				eggm_log(str1);
 				get_schedule_data_by_wday( &cur_sch, tm_now.tm_wday);
 				cur_sch_day = tm_now.tm_wday;
 				set_cur_schedule( &cur_sch);
-				sprintf( str2, "change sch[2] new ( %02d:%02d ~ %02d:%02d )",
+				
+				eggm_log("change sch[2] new ( %02d:%02d ~ %02d:%02d )",
 					cur_sch.start_hour, cur_sch.start_min, cur_sch.end_hour, cur_sch.end_min);
-				eggm_log(str2);
 			}
 			else 
 			{
@@ -257,13 +249,13 @@ void *schedule_mgr_task()
 #endif
 		{
 			last_update_hour = tm_now.tm_hour;
-			printf("=== time update =============\n");
+			eggm_log("=== time update =============\n");
 			system("echo before time : ");
 			system("date");
 			update_time();
 			system("echo after time : ");
 			system("date");
-			printf("==============================\n");
+			eggm_log("==============================\n");
 		}
 #if 0
 		//03. print time, per 1 min
@@ -294,7 +286,6 @@ void *schedule_mgr_task()
 				if( cur_sch.start_min == tm_now.tm_min )
 				//if( cur_sch.start_min >= tm_now.tm_hour )
 				{
-					printf("========== auto on!!!===========\n");
 					eggm_log("=========== auto on!!===========");
 					// power state run check
 
@@ -319,7 +310,6 @@ void *schedule_mgr_task()
 				if( cur_sch.end_min == tm_now.tm_min )
 					//if( cur_sch.end_min >= tm_now.tm_hour )
 				{
-					printf("========== auto off!!!===========\n");
 					eggm_log("=========== auto off!!===========");
 
 					// power off

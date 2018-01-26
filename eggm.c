@@ -104,7 +104,7 @@ void *remote_mgr_task()
 		{
 			if( read(connfd, recvBuff, EGGM_MSG_SIZE) < 0)
 			{
-				printf("read error\n");
+				eggm_log("read error\n");
 			}
 			else
 			{
@@ -128,7 +128,7 @@ void *remote_mgr_task()
 					set_pw_data(&pw_data);
 					memcpy(sendBuff, &eggm_msg, EGGM_MSG_SIZE);
 					write(connfd, sendBuff, strlen(sendBuff));
-					printf("write : %s\n", sendBuff);
+					eggm_log("write : %s\n", sendBuff);
 
 				}
 				else if(eggm_msg.key2 == 0x03)
@@ -141,7 +141,7 @@ void *remote_mgr_task()
 						eggm_msg.data[0] = 1;
 				
 					write(connfd, sendBuff, strlen(sendBuff));
-					printf("write : %s\n", sendBuff);
+					eggm_log("write : %s\n", sendBuff);
 				}
 
 				close(connfd);
@@ -236,7 +236,7 @@ void *monitoring_task()
 
 void *eggm_client_thread()
 {
-	printf("Start %s!\n", __func__); 
+	eggm_log("Start %s!\n", __func__); 
 	//eggm_client_run();
 	return NULL;
 }
@@ -253,7 +253,7 @@ int main(int argc, char *argv[])
 	pthread_t schedule_mgr_tid = - 1;
 	pthread_t monitoring_tid = - 1;
 	
-	eggm_log("");
+	eggm_log("test  ");
 	eggm_log("----------------------");
 	eggm_log("--- run start eggm! --");
 	eggm_log("----------------------");
