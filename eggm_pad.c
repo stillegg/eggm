@@ -171,18 +171,35 @@ void *pad_mgr_task()
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(11001);
-	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+	ret = bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 	if( ret < 0 )
 	{
 		eggm_log("eggm_pad: bind err=%d\n",ret);
+		printf("eggm_pad: bind err=%d\n",ret);
+		system("fuser -k -n tcp 11001");
+		usleep(100000);
+		while(1)
+		{
+			ret = bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
+			if( ret >= 0 )
+				break;
+			printf("retry pad socket bind\n");	
+			system("fuser -k -n tcp 11001");
+			usleep(100000);
+			
+		}
 		return;
 	}
+	printf("bind ret = %d\n", ret);
+
 	ret = listen(listenfd, 10);
 	if( ret < 0 )
 	{
 		eggm_log("eggm_pad: listen err = %d\n",ret);
+		printf("eggm_pad: listen err = %d\n",ret);
 		return;
 	}
+	printf("listen ret = %d\n", ret);
 
 	while(1)
     {

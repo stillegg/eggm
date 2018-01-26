@@ -68,6 +68,11 @@ void set_static_cur_start_schedule(struct eggm_schedule_data_t *s_data)
 	g_eggm_cur_schedule.start_min	= s_data->start_min;
 	g_is_static_start_sch_run = 1;
 	schedule_data_unlock();
+	
+	char str[200];
+	sprintf(str, "%s/%d  => %d:%d", __func__,__LINE__, 
+		s_data->start_hour, s_data->start_min);
+	eggm_log(str);
 }
 
 void set_static_cur_end_schedule(struct eggm_schedule_data_t *s_data)
@@ -78,6 +83,11 @@ void set_static_cur_end_schedule(struct eggm_schedule_data_t *s_data)
 	g_eggm_cur_schedule.end_min		= s_data->end_min;
 	g_is_static_end_sch_run = 1;
 	schedule_data_unlock();
+
+	char str[200];
+	sprintf(str, "%s/%d  => %d:%d", __func__,__LINE__, 
+		s_data->end_hour, s_data->end_min);
+	eggm_log(str);
 }
 
 int get_is_static_cur_start_schedule()
@@ -201,6 +211,7 @@ void *schedule_mgr_task()
 		// get wday data (day change)
 		if( cur_sch_day != tm_now.tm_wday)  
 		{
+			printf("---- day chang!!!\n");
 			if( (g_is_static_start_sch_run ==0) && (g_is_static_end_sch_run ==0) )
 			{
 				char str1[200];
@@ -220,14 +231,14 @@ void *schedule_mgr_task()
 				if( cur_sch.start_hour >= 24)
 				{
 					cur_sch.start_hour -= 24;
-					cur_sch_day = tm_now.tm_wday;
+					//cur_sch_day = tm_now.tm_wday;
 					set_cur_schedule( &cur_sch);
 				}
 
 				if( cur_sch.end_hour >=24 )
 				{
 					cur_sch.end_hour -= 24;
-					cur_sch_day = tm_now.tm_wday;
+					//cur_sch_day = tm_now.tm_wday;
 					set_cur_schedule( &cur_sch);
 				}
 			}
@@ -238,8 +249,12 @@ void *schedule_mgr_task()
 		}
 		
 		//02. update time, per 1 hour
+#if 1
+		if(0)
+#else
 		if( ( tm_now.tm_hour > last_update_hour ) 
 			|| (tm_now.tm_hour == 0 && last_update_hour == 23 ))
+#endif
 		{
 			last_update_hour = tm_now.tm_hour;
 			printf("=== time update =============\n");
