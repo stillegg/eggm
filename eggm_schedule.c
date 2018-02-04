@@ -241,7 +241,7 @@ void *schedule_mgr_task()
 		}
 		
 		//02. update time, per 1 hour
-#if 1
+#if 0
 		if(0)
 #else
 		if( ( tm_now.tm_hour > last_update_hour ) 
