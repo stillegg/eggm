@@ -249,13 +249,8 @@ void *schedule_mgr_task()
 #endif
 		{
 			last_update_hour = tm_now.tm_hour;
-			eggm_log("=== time update =============\n");
-			system("echo before time : ");
-			system("date");
 			update_time();
-			system("echo after time : ");
-			system("date");
-			eggm_log("==============================\n");
+			eggm_log("=== time update =============\n");
 		}
 #if 0
 		//03. print time, per 1 min
